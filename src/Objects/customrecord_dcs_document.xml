@@ -1,0 +1,106 @@
+<customrecordtype scriptid="customrecord_dcs_document">
+  <recordname>Debug Copilot Knowledge Document</recordname>
+  <!--
+    User-uploaded Knowledge Base documents for the SuiteScript Debug Copilot's
+    RAG feature (see debug_copilot_suitelet.js "Knowledge Base" section). This
+    tracks documents ON TOP OF the 4 built-in files in
+    SuiteScripts/debug-copilot/knowledge/ - those stay hardcoded/always-on
+    (KNOWLEDGE_FILES) and are not represented as rows here. One row per
+    uploaded file; the actual file content lives in the File Cabinet under
+    SuiteScripts/debug-copilot/knowledge/uploads/, this record only indexes it
+    (name/type/size/active flag) so the Suitelet can list/toggle/remove
+    without repeatedly listing the folder.
+
+    Same accesstype/permission pattern as customrecord_debug_session (see that
+    object's comment) - USEPERMISSIONLIST requires a role entry, pinned to
+    Administrator here because customrole objects are not deployable via SDF
+    on this account; the manual customrole_debug_copilot_pilot setup already
+    documented for customrecord_debug_session must also be given Full access
+    to this record type.
+  -->
+  <accesstype>USEPERMISSIONLIST</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlineediting>F</allowinlineediting>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlinedetaching>F</allowinlinedetaching>
+  <allownumberingoverride>F</allownumberingoverride>
+  <allowquickadd>F</allowquickadd>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Index of user-uploaded Knowledge Base documents (RAG) for the SuiteScript Debug Copilot. The actual file content is stored in the File Cabinet; this record tracks name, file reference, type, size, and active status. Read/written only by the Debug Copilot Suitelet.</description>
+  <enablekeywords>T</enablekeywords>
+  <enablenumbering>F</enablenumbering>
+  <enableoptimisticlocking>F</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>F</includename>
+  <isinactive>F</isinactive>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>T</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>F</shownotes>
+  <showowner>T</showowner>
+  <showowneronlist>T</showowneronlist>
+  <permissions>
+    <permission>
+      <permittedrole>ADMINISTRATOR</permittedrole>
+      <permittedlevel>FULL</permittedlevel>
+    </permission>
+  </permissions>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_dcsdoc_name">
+      <fieldtype>TEXT</fieldtype>
+      <label>Document Name</label>
+      <ismandatory>T</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcsdoc_file">
+      <fieldtype>DOCUMENT</fieldtype>
+      <label>File</label>
+      <ismandatory>T</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcsdoc_extension">
+      <fieldtype>TEXT</fieldtype>
+      <label>File Extension</label>
+      <description>Lowercase extension without the dot, e.g. "txt" or "md". Used to re-validate the file is still a supported type before it is loaded into a prompt.</description>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcsdoc_size">
+      <fieldtype>INTEGER</fieldtype>
+      <label>File Size (bytes)</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcsdoc_active">
+      <fieldtype>CHECKBOX</fieldtype>
+      <label>Active</label>
+      <description>Only active documents are loaded as RAG documents. Kept as a flag (rather than always deleting) so a document can be temporarily excluded without losing the upload.</description>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+      <defaultchecked>T</defaultchecked>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcsdoc_uploadedby">
+      <fieldtype>INTEGER</fieldtype>
+      <label>Uploaded By (Employee Internal ID)</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+  <instances>
+  </instances>
+</customrecordtype>

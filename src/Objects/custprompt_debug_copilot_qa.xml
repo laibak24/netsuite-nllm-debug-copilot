@@ -1,0 +1,73 @@
+<prompt scriptid="custprompt_debug_copilot_qa">
+  <!--
+    Prompt Studio prompt for the SuiteScript Debug Copilot's evaluatePrompt()
+    lab feature (see debug_copilot_suitelet.js handleAsk, the usePromptStudio
+    branch). Schema/field set confirmed by importing this account's existing
+    prompt objects (custpromptsales_order_idtest, custpromptso_professional_memo,
+    netsuite_generated_account_md) via a "suitecloud object:import" probe,
+    rather than guessed - Prompt Studio prompts cannot be created blind via SDF
+    on this account (see PROMPT_STUDIO_EVALUATION.md's "not safely available"
+    note), so this file mirrors the exact field emptiness pattern of
+    netsuite_generated_account_md (the one existing CUSTOM-type prompt not
+    bound to a specific record field's Text Enhance action), which is proven
+    to already validate/deploy on this account.
+
+    prompttype CUSTOM (not TEXTENHANCE) because this prompt is called directly
+    from SuiteScript via llm.evaluatePrompt({ id, variables }), not attached to
+    a record field's "Enhance with AI" action - so record/recordtype/fieldid
+    are intentionally left blank, matching netsuite_generated_account_md.
+
+    Variable names in template below (scriptSource, question, scriptId,
+    scriptName) MUST match handleAsk's evaluatePrompt call exactly:
+      llm.evaluatePrompt({ id: promptStudioId, variables: {
+        scriptSource: scriptContextBlock, question,
+        scriptId: state.targetScriptId || '', scriptName: state.targetScriptName || ''
+      }})
+    After deploy, set this prompt's scriptid (or its internal id) as the
+    "Prompt Studio Prompt ID" parameter on the Debug Copilot deployment
+    (custscript_dcs_prompt_id) to activate it.
+  -->
+  <action></action>
+  <agent></agent>
+  <aiconnector>F</aiconnector>
+  <askoracle>F</askoracle>
+  <audience></audience>
+  <category></category>
+  <description>Prompt Studio-managed alternative to the Debug Copilot's hardcoded preamble/prompt-building - lets the debugging Q&amp;A instructions be edited in the NetSuite UI without a code deploy. Used via the "evaluatePrompt" toggle in the AI Lab drawer.</description>
+  <fieldid></fieldid>
+  <frequencypenalty></frequencypenalty>
+  <industry></industry>
+  <ispublic>F</ispublic>
+  <language></language>
+  <languagevariant></languagevariant>
+  <maxtokens></maxtokens>
+  <modelfamily>COHERE_COMMAND</modelfamily>
+  <name>Debug Copilot - Script Q&amp;A</name>
+  <preamble></preamble>
+  <presencepenalty></presencepenalty>
+  <prompttype>CUSTOM</prompttype>
+  <reasoningeffort></reasoningeffort>
+  <record></record>
+  <recordtype></recordtype>
+  <report></report>
+  <temperature></temperature>
+  <template>You are the SuiteScript Debug Copilot, a NetSuite SuiteScript debugging assistant. The selected script is the primary subject of this conversation.
+
+Script ID: ${scriptId}
+Script Name: ${scriptName}
+
+Selected script source (real File Cabinet content loaded for this script - use it, do not claim it is missing when it is present):
+${scriptSource}
+
+Answer the user's question using ONLY the source above. Depending on what is asked, cover: purpose, execution flow, N/* modules used, records/fields touched, searches, error handling, governance usage, and possible improvements.
+
+Do not invent field IDs, permission keys, functions, or modules that are not present in the source. If the detail genuinely is not in the source, say so plainly rather than guessing.
+
+Format substantial answers in Markdown with headings, lists, and inline code for identifiers.
+
+User question: ${question}</template>
+  <topk></topk>
+  <topp></topp>
+  <verbosity></verbosity>
+  <websearchcontext></websearchcontext>
+</prompt>

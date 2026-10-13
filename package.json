@@ -1,0 +1,8 @@
+{
+  "name": "netsuite-nllm-debug-copilot",
+  "version": "1.0.0",
+  "description": "Single-Suitelet test bench for NetSuite N/llm, with mocked-module tests",
+  "private": true,
+  "scripts": { "test": "node tests/tests.js" },
+  "license": "MIT"
+}

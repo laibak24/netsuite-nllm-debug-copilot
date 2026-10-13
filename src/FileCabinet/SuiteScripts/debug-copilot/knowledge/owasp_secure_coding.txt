@@ -1,0 +1,37 @@
+NetSuite OWASP Secure Coding - Condensed Reference for the Debug Copilot
+
+INPUT VALIDATION
+- Validate all input server-side; client-side validation is a UX convenience only, never a security control.
+- Numeric IDs: parseInt, reject NaN, enforce range. Strings: trim, cap max length, reject control characters. Enums: allowlist permitted values rather than blocklisting bad ones.
+
+OUTPUT ENCODING / XSS PREVENTION
+- Never insert raw user or record-field data into HTML, JS, or SQL strings. Encode for the context: HTML-entity-encode for HTML body/attributes, JS-string-encode inside <script> blocks, encodeURIComponent for URL parameters.
+- In Suitelets built with raw HTML strings, always run dynamic values through an encodeHTML() helper (replace &, <, >, ", ') before concatenating into the response.
+- In client-side DOM code, prefer textContent over innerHTML for untrusted data.
+- postMessage listeners must validate e.origin with an anchored regex (^https://...$) or an exact match - an unanchored regex like /netsuite\.com/ can be bypassed with a hostname like evil.com?netsuite.com.
+
+SQL / SUITEQL SAFETY
+- Never build SuiteQL by string-concatenating user input. Always use ? placeholders with a params array: query.runSuiteQL({ query: 'WHERE id = ?', params: [id] }).
+- This applies to runSuiteQLPaged and promise variants too.
+- For a dynamic IN-clause, build the right number of ? placeholders and pass all values through params, never inline.
+- A CustomTool or AI-facing endpoint should never accept raw SQL/SuiteQL text from an agent or user; expose only allowlisted, fixed query templates with bound parameters, since query text can be altered by hallucination or prompt injection.
+
+FILE UPLOAD SAFETY
+- Allowlist file extensions and MIME types rather than blocklisting.
+- Enforce a maximum file size before processing (a common baseline is a few MB).
+- Sanitize file names: strip path separators and "../" sequences to prevent path traversal.
+
+HTTP SECURITY HEADERS FOR SUITELETS
+- Set X-Content-Type-Options: nosniff and X-Frame-Options: SAMEORIGIN on Suitelet responses.
+- Set Cache-Control: no-store, no-cache, must-revalidate, private on any page showing sensitive data (execution logs, record schemas, chat history).
+- Consider a Content-Security-Policy restricting script/style/img sources to 'self' and *.netsuite.com.
+
+LOGGING SAFETY
+- Never log passwords, auth tokens, API keys, credit card numbers, or SSNs.
+- Strip \r\n and control characters from any user-supplied value before writing it to log.audit/error, to prevent log injection (an attacker embedding fake log entries via newlines).
+- Prefer structured logging: action, user ID, timestamp, result, and the specific record/entity affected.
+
+RATE LIMITING AND ACCESS CONTROL
+- For endpoints that trigger a paid or expensive operation (like a generative-AI call), use N/cache to track a per-user request count within a time window and reject requests over the limit.
+- Verify the caller's role/permission at the top of any Suitelet or RESTlet entry point rather than assuming the deployment audience is the only gate.
+- Treat an Insecure Direct Object Reference (IDOR) risk seriously: confirm the caller has permission to view the specific record/script/deployment being requested, not just that they are logged in.

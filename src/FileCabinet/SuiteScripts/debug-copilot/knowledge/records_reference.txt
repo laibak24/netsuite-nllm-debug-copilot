@@ -1,0 +1,26 @@
+NetSuite SuiteScript Records Reference - Condensed Reference for the Debug Copilot
+
+WHAT THIS COVERS
+An authoritative reference for all 272 NetSuite record types and their fields, sourced from the NetSuite SuiteScript Records Browser. Use it to check field internal IDs, field types, whether a field is required, and whether a record supports scripting - before guessing.
+
+RECORD-LEVEL PROPERTIES TO CHECK
+- recordCategory: List, Transaction, Entity, Activity, Subrecord, Script, or Custom.
+- scriptingLevel: "Full" supports create/update/delete via script; "Read and Search Only" cannot be created or updated via script; "Search Only" is not accessible via N/record at all, only N/search.
+- clientScriptable / serverScriptable: whether the record can be used from a Client Script (currentRecord) and/or server-side scripts (User Event, Scheduled, Map/Reduce, Suitelet).
+- supportsCustomFields: whether custrecord_*/custbody_*/custitem_* style custom fields can be added.
+- scriptingNotes: special caveats, e.g. "server scripts must access through the parent record" for some subrecords.
+
+FIELD-LEVEL PROPERTIES TO CHECK
+- internalId: the exact field ID to use in getValue/setValue (e.g. "entity", "trandate", "tranid").
+- type: text, select, currency, date, checkbox, integer, etc.
+- required: whether the field must be set before the record can save.
+- nlapiSubmitField: whether the field can be updated via a fast field-only submit rather than a full record load/save.
+- label / help: the human-readable name and any tooltip text.
+
+HOW THE lookupRecordFieldSchema TOOL RELATES TO THIS
+The Debug Copilot's lookupRecordFieldSchema tool inspects a record type LIVE in this account (via record.create({ type, isDynamic: true }) and the record's own getFields/getSublists/getSublistFields), which reflects this account's actual custom fields, forms, and features. This document is the general NetSuite reference; the live tool result is the source of truth for this specific account when the two disagree (for example, a custom field that only exists here, or a standard field hidden by a feature that isn't enabled in this account).
+
+COMMON PITFALLS
+- Do not assume a standard field ID guessed from its UI label is correct - label text and internal ID frequently differ (e.g. the UI label "Order Status" vs the field ID "status" or "orderstatus" depending on record type). Always confirm via the live tool or this reference before writing code.
+- A field can exist on a record's form without being scriptable, and vice versa - check scriptingLevel and clientScriptable/serverScriptable, not just field presence.
+- Custom record types (customrecord_*) do not appear in this static reference at all since they are account-specific; they can only be inspected live via the lookupRecordFieldSchema tool.

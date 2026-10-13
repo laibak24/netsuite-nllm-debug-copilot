@@ -1,0 +1,32 @@
+NetSuite SDF Safe Guide - Condensed Reference for the Debug Copilot
+
+SCRIPT OBJECT XML BASICS
+- All <scriptfile> and <rpcschema> paths must be wrapped in brackets, e.g. <scriptfile>[/SuiteScripts/my_script.js]</scriptfile>. Missing brackets is the #1 cause of "deployment fails with path error".
+- <runasrole> and <allroles> are only valid on UserEventScript, Suitelet, and Portlet (Portlet has no runasrole). ClientScript, Restlet, MapReduceScript, ScheduledScript, MassUpdateScript, WorkflowActionScript do not support them - including them causes a validation error.
+- ClientScript, UserEventScript, MassUpdateScript, and WorkflowActionScript all require a <recordtype> element in their deployment.
+- CustomTool (ToolSet, custtoolset_ prefix in 2026.1+) does not use <scriptdeployments> at all, and does not support <description>, <isinactive>, <notifyadmins>, <notifyowner>, <runasrole>, or <allroles>.
+- Any project containing a customrecordtype must add the CUSTOMRECORDS feature to manifest.xml, or deployment fails.
+- customrecordtype XML does not support <allowinlineinsert> - omit it.
+
+SECURITY-CRITICAL DEPLOYMENT SETTINGS
+- Suitelet deployments must set <isonline>F</isonline> explicitly unless the Suitelet is intentionally public/anonymous. isonline=T with no auth check is one of the most common real-world SuiteApp vulnerabilities.
+- <allroles>T</allroles> only grants access to internal roles. External/portal roles (Customer Center, Partner Center, Vendor Center) require explicit <audslctrole> entries.
+- To scope a deployment to one specific custom role instead of every internal role, set <allroles>F</allroles> and add <audslctrole>[role_scriptid]</audslctrole> for each role that should have access.
+- Never use ADMINISTRATOR as <runasrole> in production scripts; create a dedicated least-privilege role instead.
+
+GOVERNANCE AND LIMITS
+- Suitelet / User Event / Client / Portlet scripts get 1,000 governance units and a 300-second time limit per execution.
+- Always call runtime.getCurrentScript().getRemainingUsage() before an expensive loop or a second expensive external call (like a generation call), and abort gracefully if units are low.
+- search.lookupFields() costs 1 unit and is the cheapest way to read a few fields - prefer it over record.load() (2/5/10 units depending on record category) when you only need specific field values.
+- Client Scripts silently ignore log.* calls; use console.log() for Client Script debugging instead.
+
+QUERYABLE SUITEQL SYSTEM TABLES (for script diagnostics)
+- scriptnote: log entries written by log.debug/audit/error/emergency(). Columns include date, type, title, detail, and scripttype (the parent script's internal numeric ID, despite the name). No per-deployment column exists.
+- scriptdeployment: deployment configuration - scriptid, title, isdeployed, status, loglevel, recordtype, and script (FK to the script table's internal id).
+- script: script master records - id, scriptid, name, scripttype, scriptfile, apiversion, isinactive.
+- NOT queryable via SuiteQL: APM dashboard data, User Event/Suitelet/RESTlet execution duration, governance units consumed per execution, and CustomTool execution logs (UI-only).
+
+DEFENSIVE CODING
+- Assume other scripts (workflows, other User Events, bundles) may act on the same record; check a value before overwriting it, and make operations idempotent (search before create).
+- Wrap script logic in try/catch and log the error name, message, and stack rather than letting an unhandled exception abort silently.
+- Filter out inactive records in searches/SuiteQL (isinactive = 'F') unless inactive records are explicitly needed; transaction records do not have isinactive - use status fields instead.

@@ -1,0 +1,20 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+project.json
+
+# SuiteCloud / build
+build
+.sdf
+
+# Dependencies and logs
+node_modules
+npm-debug.log*
+*.log
+
+# Editors / OS
+.idea
+.vscode
+.DS_Store
+Thumbs.db

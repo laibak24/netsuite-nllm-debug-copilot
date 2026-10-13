@@ -1,0 +1,111 @@
+<customrecordtype scriptid="customrecord_debug_session">
+  <recordname>Debug Copilot Session</recordname>
+  <!--
+    accesstype=USEPERMISSIONLIST requires at least one entry under
+    <permissions> or NetSuite refuses to save the record type ("You have
+    chosen to use the permission list, but have not defined any roles").
+    It is pinned to the built-in Administrator role here only because
+    customrole objects are not deployable via SDF in this account (deploy
+    warns "The customrole object is invalid or not supported and will be
+    ignored" for customrole_debug_copilot_pilot.xml) - that role must be
+    created by hand in the UI (Setup > Users/Roles > Manage Roles > New,
+    matching the permissions listed in customrole_debug_copilot_pilot.xml),
+    then added here too: this record > Customization > Custom Record Types
+    > Debug Copilot Session > Permissions subtab > add the pilot role at
+    Full, matching the role-side grant.
+  -->
+  <accesstype>USEPERMISSIONLIST</accesstype>
+  <allowattachments>F</allowattachments>
+  <allowinlineediting>F</allowinlineediting>
+  <allowinlinedeleting>F</allowinlinedeleting>
+  <allowinlinedetaching>F</allowinlinedetaching>
+  <allownumberingoverride>F</allownumberingoverride>
+  <allowquickadd>F</allowquickadd>
+  <allowuiaccess>T</allowuiaccess>
+  <description>Resolved-issue cache for the SuiteScript Debug Copilot. One record per answered question: stores the question, the final answer, and a JSON-stringified embedding of the question used for semantic cache lookups. Read/written only by the Debug Copilot Suitelet.</description>
+  <enablekeywords>T</enablekeywords>
+  <enablenumbering>F</enablenumbering>
+  <enableoptimisticlocking>F</enableoptimisticlocking>
+  <enablesystemnotes>T</enablesystemnotes>
+  <hierarchical>F</hierarchical>
+  <includename>F</includename>
+  <isinactive>F</isinactive>
+  <showcreationdate>T</showcreationdate>
+  <showcreationdateonlist>T</showcreationdateonlist>
+  <showid>T</showid>
+  <showlastmodified>T</showlastmodified>
+  <showlastmodifiedonlist>F</showlastmodifiedonlist>
+  <shownotes>F</shownotes>
+  <showowner>F</showowner>
+  <showowneronlist>F</showowneronlist>
+  <permissions>
+    <permission>
+      <permittedrole>ADMINISTRATOR</permittedrole>
+      <permittedlevel>FULL</permittedlevel>
+    </permission>
+  </permissions>
+  <customrecordcustomfields>
+    <customrecordcustomfield scriptid="custrecord_dcs_question">
+      <fieldtype>TEXTAREA</fieldtype>
+      <label>Question</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcs_answer">
+      <fieldtype>TEXTAREA</fieldtype>
+      <label>Answer</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <!--
+      No custrecord_dcs_embedding field: a JSON-stringified embedding vector
+      is many thousands of characters, past TEXTAREA's hard 4000-char cap
+      (confirmed live: INVALID_FLD_VALUE). LONGTEXT was tried and rejected by
+      this account's SDF validator for customrecordcustomfield. Embeddings
+      are now stored in a File Cabinet JSON file per script
+      (SuiteScripts/debug_copilot_embeddings_<scriptid>.json), keyed by this
+      record's internal id - see debug_copilot_suitelet.js's
+      loadEmbeddingsIndex/saveEmbeddingsIndex. Governance notes on embedding
+      sensitivity still apply to that file's contents.
+    -->
+    <customrecordcustomfield scriptid="custrecord_dcs_scriptid">
+      <fieldtype>TEXT</fieldtype>
+      <label>Script ID</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcs_deploymentid">
+      <fieldtype>TEXT</fieldtype>
+      <label>Deployment ID</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcs_created">
+      <fieldtype>DATETIMETZ</fieldtype>
+      <label>Created</label>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+    <customrecordcustomfield scriptid="custrecord_dcs_context_hash">
+      <fieldtype>TEXT</fieldtype>
+      <label>Context Hash</label>
+      <description>Short hash of the RAG/model context this answer was generated under (which knowledge documents were active, plus the model used) - see computeContextHash() in debug_copilot_suitelet.js. A cached answer is only ever reused for a later question whose current context hash matches, so an answer generated before a Knowledge Base document was added/removed/toggled is never silently served as if that document had been considered.</description>
+      <ismandatory>F</ismandatory>
+      <isformula>F</isformula>
+      <storevalue>T</storevalue>
+      <displaytype>NORMAL</displaytype>
+    </customrecordcustomfield>
+  </customrecordcustomfields>
+  <instances>
+  </instances>
+</customrecordtype>

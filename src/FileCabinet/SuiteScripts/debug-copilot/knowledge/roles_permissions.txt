@@ -1,0 +1,29 @@
+NetSuite Roles and Permissions - Condensed Reference for the Debug Copilot
+
+PERMISSION ID BASICS
+- Standard permission IDs use one of five prefixes: ADMI_ (Administration), LIST_ (Lists/Records), REGT_ (Registers), REPO_ (Reports), TRAN_ (Transactions). Never invent or abbreviate an ID - if unsure, say so rather than guessing.
+- Custom record CRUD permissions use the custom record's own script ID as the permkey (e.g. customrecord_debug_session), not a generic "custom record" permission. The generic LIST_CUSTRECORDENTRY only governs the Custom Record center-tab list, not a specific record type's CRUD access.
+- Permission levels, from least to most access: VIEW (read/search only), CREATE (add new records only), EDIT (create or update existing), FULL (delete or broad admin control). Default to the smallest level that satisfies the behavior; treat FULL as exceptional and justify it.
+
+PERMISSIONS THAT DO NOT EXIST - DO NOT INVENT THESE
+- There is no standalone "Generative AI" / "N/llm" permission key in NetSuite's permission model. Access to llm.* calls is controlled by (1) the account-level feature "SuiteScript Generative AI APIs" under Setup > Company > Enable Features > SuiteCloud, and (2) whether the caller's role is in the audience of the script deployment that calls llm.* - not by a role permission.
+- There is no dedicated "SuiteQL" permission key. SuiteQL/N/query access is governed by LIST_FIND ("Perform Search").
+- There is no dedicated "Script Deployment" record permission key distinct from SuiteScript itself. Viewing/editing script and script deployment records is governed by ADMI_CUSTOMSCRIPT ("SuiteScript").
+
+COMMON REAL PERMISSION IDS
+- ADMI_CUSTOMSCRIPT ("SuiteScript") - view/create/edit script and script deployment records. VIEW is enough to see a deployment and any buttons a User Event script adds to it; FULL/EDIT is only needed to actually create or modify deployments (developer/admin work).
+- ADMI_CUSTRECORD ("Custom Record Types") - create/edit the custom record TYPE definition itself (schema-level). This is separate from CRUD on a specific record's data, and should stay dev/admin-only.
+- LIST_FILECABINET ("Documents and Files") - VIEW to read File Cabinet content (e.g. knowledge-base documents); CREATE is needed only if the role must upload/replace files.
+- LIST_FIND ("Perform Search") - required for SuiteQL (N/query) and saved-search-style access.
+- TRAN_SALESORD, TRAN_CUSTINVC, TRAN_PURCHORD, LIST_CUSTJOB, LIST_VENDOR, LIST_EMPLOYEE - the usual per-record-type permissions; grant only the ones relevant to the record types a tool or script actually touches.
+
+RUN-AS-ROLE AND LEAST PRIVILEGE
+- Never recommend the built-in Administrator role as a script's runasrole for production use, and never combine an elevated runasrole with <allroles>T</allroles> - that grants everyone elevated access. Use a dedicated least-privilege role instead, or omit runasrole so the script runs as the current user.
+- To restrict a script deployment to one specific internal role rather than everyone, set <allroles>F</allroles> and add an <audslctrole> entry naming that role.
+- Keep a pilot/beta role scoped to a small named group of testers before widening the audience - do not default to allroles=T for a new AI-powered feature still being evaluated.
+
+REVIEW CHECKLIST WHEN ANSWERING A PERMISSIONS QUESTION
+- Confirm the exact permkey against known NetSuite IDs; do not guess or abbreviate.
+- State the recommended permlevel and why that level (not a higher one) is sufficient.
+- Call out any related permission that is probably also needed, and any permission the user asked about that is not actually required.
+- Say explicitly when a permission cannot be confirmed and you are inferring from a similar use case.

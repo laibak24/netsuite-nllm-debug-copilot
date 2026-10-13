@@ -1,0 +1,10 @@
+<manifest projecttype="ACCOUNTCUSTOMIZATION">
+  <projectname>nllm-debug-copilot</projectname>
+  <dependencies>
+    <features>
+      <feature required="true">SERVERSIDESCRIPTING</feature>
+      <feature required="true">CUSTOMRECORDS</feature>
+    </features>
+  </dependencies>
+  <frameworkversion>1.0</frameworkversion>
+</manifest>

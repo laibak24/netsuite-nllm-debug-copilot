@@ -1,0 +1,45 @@
+<suitelet scriptid="customscript_debug_copilot_stlt">
+  <name>SuiteScript Debug Copilot</name>
+  <scriptfile>[/SuiteScripts/debug_copilot_suitelet.js]</scriptfile>
+  <description>Chat UI for the SuiteScript Debug Copilot - RAG-grounded, tool-calling N/llm assistant scoped to a single script/deployment. Self-service: load with no parameters to pick a script/deployment, or pass ?scriptid=&amp;deploymentid=&amp;scriptname= directly.</description>
+  <isinactive>F</isinactive>
+  <notifyadmins>F</notifyadmins>
+  <notifyowner>T</notifyowner>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_debug_copilot_stlt">
+      <title>SuiteScript Debug Copilot</title>
+      <status>TESTING</status>
+      <isdeployed>T</isdeployed>
+      <!-- SECURITY: requires login - this Suitelet reads execution logs and record metadata. Never set to T. -->
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <!--
+        SECURITY TODO (manual, post-deploy): this account rejects <audslctrole>
+        referencing a custom role created in the same SDF push (validation error:
+        "invalid or not supported for subrecord scriptdeployment"), so audience
+        cannot be scoped to customrole_debug_copilot_pilot from XML here. Runs as
+        Current Role (no runasrole) with allroles=T as a deploy-safe default -
+        after deploy, go to Customization > Scripting > Script Deployments >
+        this deployment > Audience tab and restrict it to
+        "Debug Copilot Pilot Tester" manually, matching the least-privilege
+        pilot-only intent from the governance notes.
+      -->
+      <allroles>T</allroles>
+      <!-- Points at src/Objects/custprompt_debug_copilot_qa.xml, deployed
+           alongside this script - activates the "evaluatePrompt" AI Lab
+           toggle. Edit the prompt's instructions in the NetSuite UI (Prompt
+           Studio) at any time without a code deploy; only changing WHICH
+           prompt is used requires touching this value. -->
+      <custscript_dcs_prompt_id>custprompt_debug_copilot_qa</custscript_dcs_prompt_id>
+    </scriptdeployment>
+  </scriptdeployments>
+  <scriptcustomfields>
+    <scriptcustomfield scriptid="custscript_dcs_prompt_id">
+      <fieldtype>TEXT</fieldtype>
+      <label>Prompt Studio Prompt ID</label>
+      <description>Optional Prompt Studio script ID or internal ID for evaluatePrompt. Leave empty to use generateText only. The prompt must define variables scriptSource, question, scriptId, and scriptName.</description>
+      <isformula>F</isformula>
+      <ismandatory>F</ismandatory>
+    </scriptcustomfield>
+  </scriptcustomfields>
+</suitelet>
