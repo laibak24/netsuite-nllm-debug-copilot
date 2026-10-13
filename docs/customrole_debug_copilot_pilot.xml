@@ -1,0 +1,86 @@
+<!--
+  NOT DEPLOYABLE VIA SDF IN THIS ACCOUNT: `suitecloud project:deploy` logs
+  "The customrole object is invalid or not supported and will be ignored"
+  for this file and never creates it. This file is kept as the authoritative
+  permission spec - create the role by hand at Setup > Users/Roles > Manage
+  Roles > New, name it "Debug Copilot Pilot Tester", and add exactly the
+  permissions listed below. Then: (1) add it to the
+  customrecord_debug_session Permissions subtab at Full, and (2) restrict
+  the customscript_debug_copilot_stlt deployment's Audience to it (both are
+  manual UI steps too - see those files' comments for why).
+-->
+<customrole scriptid="customrole_debug_copilot_pilot">
+  <name>Debug Copilot Pilot Tester</name>
+  <centertype>BASIC</centertype>
+  <issalesrole>F</issalesrole>
+  <issupportrole>F</issupportrole>
+  <isbookkeeperrole>F</isbookkeeperrole>
+  <iswebserviceonlyrole>F</iswebserviceonlyrole>
+  <restrictbydevice>F</restrictbydevice>
+  <setasdefault>F</setasdefault>
+  <permissions>
+    <!--
+      There is no standalone "Generative AI" / N/llm permission key in NetSuite's
+      permission model (checked against the netsuite-sdf-roles-and-permissions
+      reference data - no ADMI_/LIST_/REPO_/TRAN_ id matches "generative" or "AI").
+      Access to llm.* calls is gated by two things instead, neither of which is a
+      role permission:
+        1. The account-level feature "SuiteScript Generative AI APIs"
+           (Setup > Company > Enable Features > SuiteCloud) must be enabled.
+        2. This role must be in the audience of the Debug Copilot Suitelet's
+           deployment (see customscript_debug_copilot_stlt.xml).
+      Do not add an invented permkey for this - see roles_permissions.txt in the
+      knowledge base for the same caveat surfaced to the assistant itself.
+    -->
+
+    <!-- View script/deployment records - lets testers cross-reference the script
+         they are debugging in the NetSuite UI. Not edit/create: pilot testers
+         do not deploy scripts. Not required for the Suitelet's own picker or
+         getExecutionLogForScript tool, which read script/scriptdeployment via
+         SuiteQL (LIST_FIND) instead - see customscript_debug_copilot_stlt.xml
+         header for why there is no UE-based deployment-record button. -->
+    <permission>
+      <permkey>ADMI_CUSTOMSCRIPT</permkey>
+      <permlevel>VIEW</permlevel>
+    </permission>
+
+    <!-- Read/write the resolved-issue cache record. Full is required here (not just
+         the generic "Custom Record Entries" list permission) because this is the
+         specific custom record type the Suitelet creates and queries. -->
+    <permission>
+      <permkey>customrecord_debug_session</permkey>
+      <permlevel>FULL</permlevel>
+    </permission>
+
+    <!-- Read/write/delete the Knowledge Base document index (upload, list,
+         remove user-added RAG documents). Same FULL-not-generic-list
+         reasoning as customrecord_debug_session above. -->
+    <permission>
+      <permkey>customrecord_dcs_document</permkey>
+      <permlevel>FULL</permlevel>
+    </permission>
+
+    <!-- SuiteQL / N/query access for the getExecutionLogForScript tool. NetSuite has
+         no dedicated "SuiteQL" permission; LIST_FIND ("Perform Search") is the
+         permission that governs it. -->
+    <permission>
+      <permkey>LIST_FIND</permkey>
+      <permlevel>VIEW</permlevel>
+    </permission>
+
+    <!-- File Cabinet > SuiteScripts: read the knowledge-base docs, AND
+         create/update the per-script embeddings JSON files
+         (SuiteScripts/debug_copilot_embeddings_<scriptid>.json) that
+         saveSession()/loadEmbeddingsIndex() write at runtime under the
+         calling tester's own role - not an elevated one. EDIT (not FULL):
+         covers create-new and update-existing-file, but not delete, which
+         this Suitelet never needs. Originally scoped to VIEW-only on the
+         assumption testers never write files; that assumption broke once
+         the embeddings cache moved out of a length-capped custom record
+         field and into these files (see customrecord_debug_session.xml). -->
+    <permission>
+      <permkey>LIST_FILECABINET</permkey>
+      <permlevel>EDIT</permlevel>
+    </permission>
+  </permissions>
+</customrole>
